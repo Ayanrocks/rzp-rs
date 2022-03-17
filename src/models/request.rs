@@ -1,20 +1,20 @@
+use std::borrow::Borrow;
 use std::collections::HashMap;
 
 use reqwest::blocking::{Client, RequestBuilder, Response};
+use reqwest::Error;
 use serde::{de, Deserialize};
 use serde::de::DeserializeOwned;
 
 use crate::constants::{BASE_URL, SDK_NAME, SDK_VERSION};
-use std::borrow::Borrow;
-use reqwest::Error;
 
 pub struct Request {
     auth: Auth,
-    headers: HashMap<String, String>,
+    pub headers: HashMap<String, String>,
     version: String,
     sdk_name: String,
     // AppDetails map[string]string
-    base_url: String,
+    pub(crate) base_url: String,
     http_client: Client,
 }
 
@@ -54,15 +54,6 @@ impl Request {
             .basic_auth(&self.auth.key_id, Some(&self.auth.key_secret));
         let response = req.send().unwrap();
 
-        //
-        // let res = match response {
-        //     Ok(R) => R,
-        //     Err(err) => {
-        //         println!("Error Occurred: {:?}", err);
-        //         None
-        //     }
-        // };
-
         if response.status() == reqwest::StatusCode::BAD_REQUEST {
             println!("Error Response from Razorpay: ");
             todo!("Add error handling and return error response as well as success response");
@@ -80,11 +71,14 @@ impl Request {
             .basic_auth(&self.auth.key_id, Some(&self.auth.key_secret))
             .json(&req_payload);
         let response = req.send().unwrap();
+        // println!("Request Payload: {:?}", req.text());
 
         if response.status() == reqwest::StatusCode::BAD_REQUEST {
             println!("Error Response from Razorpay: ");
             todo!("Add error handling and return error response as well as success response");
         }
+
+        // println!("Response Payload: {:?}", response.text());
 
         return response.json::<T>();
     }
