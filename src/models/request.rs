@@ -1,10 +1,7 @@
-use std::borrow::Borrow;
 use std::collections::HashMap;
 
-use reqwest::blocking::{Client, RequestBuilder, Response};
+use reqwest::blocking::{Client};
 use reqwest::Error;
-use serde::{de, Deserialize};
-use serde::de::DeserializeOwned;
 
 use crate::constants::{BASE_URL, SDK_NAME, SDK_VERSION};
 
@@ -41,15 +38,14 @@ impl Request {
         c
     }
 
-    pub fn do_request(&self, req: &RequestBuilder) -> reqwest::Result<Response> {
-        todo!("Implement this later");
-        return req.send();
-    }
+    // pub fn do_request(&self, req: &RequestBuilder) -> reqwest::Result<Response> {
+    //     todo!("Implement this later");
+    // }
 
     pub fn get<T: serde::de::DeserializeOwned>(&self, url: &str) -> Result<T, Error> {
         let final_url = format!("{}/{}", self.base_url, url);
         println!("Sending request: {}", final_url);
-        let mut req = self.http_client
+        let req = self.http_client
             .get(final_url)
             .basic_auth(&self.auth.key_id, Some(&self.auth.key_secret));
         let response = req.send().unwrap();
@@ -66,7 +62,7 @@ impl Request {
         let final_url = format!("{}/{}", self.base_url, url);
         println!("Sending request: {}", final_url);
         let req_payload = body.unwrap();
-        let mut req = self.http_client
+        let req = self.http_client
             .post(final_url)
             .basic_auth(&self.auth.key_id, Some(&self.auth.key_secret))
             .json(&req_payload);

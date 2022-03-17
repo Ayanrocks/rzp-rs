@@ -2,7 +2,6 @@ use std::collections::HashMap;
 
 use reqwest::Error;
 use serde::{de, Deserialize, Serialize};
-use serde::de::DeserializeOwned;
 
 use crate::models::request::Request;
 
