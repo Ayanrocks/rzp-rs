@@ -8,6 +8,8 @@ mod models;
 #[cfg(test)]
 mod tests {
     use crate::models::sdk_client::CreateCustomer;
+    use serde::de::Unexpected::Option;
+    use std::env::var;
 
     use super::*;
 
@@ -24,9 +26,27 @@ mod tests {
 
         println!("Testing customer creation");
 
-        let customer_response = client.create_order(create_customer_payload).unwrap();
+        let customer_response = client.create_order(create_customer_payload);
 
-        println!("{:?}", customer_response);
+        let customer_response = match customer_response {
+            Ok(s) => {
+                assert_eq!(s.name, "test-customer".to_string(), "success response")
+            }
+            Err(err) => {
+                assert_eq!(
+                    err.error.code,
+                    Some("BAD_REQUEST_ERROR".to_string()),
+                    "bad request error found"
+                );
+
+                assert_eq!(
+                    err.error.description,
+                    Some("The api key provided is invalid".to_string()),
+                    "bad request error found"
+                );
+            }
+        };
+
     }
 }
 

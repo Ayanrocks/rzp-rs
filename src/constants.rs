@@ -1,3 +1,5 @@
+#[allow(dead_code)]
+
 pub const SDK_VERSION: &str = "0.0.1";
 pub const SDK_NAME: &str = "rzp-rs";
 

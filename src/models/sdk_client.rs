@@ -1,9 +1,10 @@
 use std::collections::HashMap;
 
 use reqwest::Error;
-use serde::{de, Deserialize, Serialize};
+use serde::{Deserialize, Serialize};
 
 use crate::models::request::Request;
+use crate::models::api_objects::ErrorResponse;
 
 pub struct Client {
     request_client: Request,
@@ -50,7 +51,7 @@ impl Client {
     }
 
 
-    pub fn create_order(&self, req_payload: CreateCustomer) -> Result<CreateCustomerResponse, Error> {
+    pub fn create_order(&self, req_payload: CreateCustomer) -> Result<CreateCustomerResponse, ErrorResponse> {
         let mut hm = HashMap::new();
         hm.insert(String::from("name"), req_payload.name);
         hm.insert(String::from("email"), req_payload.email);
