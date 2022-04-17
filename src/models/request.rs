@@ -7,7 +7,7 @@ use std::io::Read;
 use reqwest::blocking::{Client, ClientBuilder, RequestBuilder};
 
 use crate::constants::{BASE_URL, SDK_NAME, SDK_VERSION};
-use crate::models::api_objects::ErrorResponse;
+use crate::models::api_objects::{ErrorObject, ErrorResponse};
 
 pub struct Request {
     auth: Auth,
@@ -83,7 +83,7 @@ impl Request {
         println!("Sending request: {}", final_url);
 
         let req_payload = body.expect("body::unwrap");
-        let mut req = self
+        let req = self
             .http_client
             .post(final_url)
             .basic_auth(&self.auth.key_id, Some(&self.auth.key_secret))
@@ -92,15 +92,15 @@ impl Request {
         let mut response = req.send().unwrap();
         println!("Response status: {:?}", response.status());
 
-        // {
-        //     // Printing response payload
-        //     let mut buf: Vec<u8> = vec![];
-        //     response.copy_to(&mut buf).expect("response.copy_to");
-        //     println!(
-        //         "Response Payload: {:?}",
-        //         std::str::from_utf8(buf.as_slice())
-        //     );
-        // }
+        {
+            // Printing response payload
+            let mut buf: Vec<u8> = vec![];
+            response.copy_to(&mut buf).expect("response.copy_to");
+            println!(
+                "Response Payload: {:?}",
+                std::str::from_utf8(buf.as_slice())
+            );
+        }
 
         if response.status() == reqwest::StatusCode::BAD_REQUEST
             || response.status() == reqwest::StatusCode::UNAUTHORIZED
@@ -114,7 +114,19 @@ impl Request {
             return Err(err_response);
         }
 
-        let success_response = response.json::<T>().expect("Response::Json()");
+        let success_response = response.json::<T>();
+
+        match success_response {
+            Ok(s) => return Ok(s),
+            Err(e) => {
+                println!(e);
+                Err(ErrorResponse{
+                    error: ErrorObject{
+                        code: reqwest::StatusCode::INTERNAL_SERVER_ERROR
+                    }
+                })
+            }
+        }
 
         return Ok(success_response);
     }

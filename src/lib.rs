@@ -8,15 +8,22 @@ mod models;
 #[cfg(test)]
 mod tests {
     use crate::models::sdk_client::CreateCustomer;
-    use serde::de::Unexpected::Option;
-    use std::env::var;
 
     use super::*;
 
+    /// Creates a new client and test if the client is successfully created
     #[test]
     fn it_create_new_client() {
         println!("Testing client creation");
         let client = init_client("", "");
+
+        assert!(client.is_ok(), "Client not equal to null")
+    }
+
+    /// creates a new order in razorpay
+    #[test]
+    fn it_creates_new_order() {
+        let client = init_client("rzp_test_Hrfyvpc1Crgug5", "3JTS2VDW5haLJ6nmtjEN2TUl").expect("A new client");
         let create_customer_payload = CreateCustomer {
             name: "test-customer".to_string(),
             email: "test-customer@sezzle.in".to_string(),
@@ -46,10 +53,9 @@ mod tests {
                 );
             }
         };
-
     }
 }
 
-pub fn init_client(key_id: &str, key_secret: &str) -> Client {
-    return Client::new_client(key_id, key_secret);
+pub fn init_client(key_id: &str, key_secret: &str) -> Result<Client, String> {
+    return Ok(Client::new_client(key_id, key_secret));
 }
