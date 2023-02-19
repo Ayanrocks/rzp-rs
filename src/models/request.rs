@@ -5,9 +5,10 @@ use std::fmt::{Debug, Pointer};
 use std::io::Read;
 
 use reqwest::blocking::{Client, ClientBuilder, RequestBuilder};
+use crate::constants;
 
 use crate::constants::{BASE_URL, SDK_NAME, SDK_VERSION};
-use crate::models::api_objects::{ErrorObject, ErrorResponse};
+use crate::models::api_objects::{RzpErrorObject, ErrorResponse};
 
 pub struct Request {
     auth: Auth,
@@ -62,17 +63,34 @@ impl Request {
             println!("Error Response from Razorpay: ");
             // todo!("Add error handling and return error response as well as success response");
             let err_response = response
-                .json::<ErrorResponse>()
-                .expect("Error For Bad Request");
+                .json::<RzpErrorObject>();
 
-            return Err(err_response);
-        }
+            let error = match err_response {
+                Ok(err) =>
+                    ErrorResponse {
+                        error: err,
+                        lib_error_code: constants::ERR_RAZORPAY_ERROR,
+                        lib_error_description: constants::ERRDESC_RAZORPAY_ERROR,
+                        lib_error: None,
+                    }
+                ,
+                Err(e) =>
+                    ErrorResponse {
+                        error: none,
+                        lib_error_code: constants::ERR_RAZORPAY_ERROR,
+                        lib_error_description: constants::ERRDESC_RAZORPAY_ERROR,
+                        lib_error: Some(e.to_string),
+                    }
+            };
+            return Err(error);
+        };
 
         // println!("Response Payload: {:?}", response.text());
         let success_response = response.json::<T>().expect("Response::Json()");
 
         return Ok(success_response);
     }
+
 
     pub fn post<T: serde::de::DeserializeOwned>(
         &self,
@@ -120,14 +138,21 @@ impl Request {
             Ok(s) => return Ok(s),
             Err(e) => {
                 println!(e);
-                Err(ErrorResponse{
-                    error: ErrorObject{
-                        code: reqwest::StatusCode::INTERNAL_SERVER_ERROR
+                Err(ErrorResponse {
+                    error: RzpErrorObject {
+                        code: None,
+                        description: None,
+                        field: None,
+                        source: None,
+                        step: None,
+                        reason: None,
+                        metadata: None,
                     }
                 })
             }
-        }
+        }.expect("TODO: panic message")
 
         return Ok(success_response);
     }
 }
+

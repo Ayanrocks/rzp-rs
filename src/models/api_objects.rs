@@ -1,15 +1,33 @@
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
+
+/// ErrorResponse is the error struct that is being returned by this library
+///
+/// It has THREE major components
+///
+/// error: block contains errors from razorpay directly parsed in.
+///
+/// lib_error_code: contains library specific code to check for parsing ad other internal errors.
+///     These errors are not related to the actual razorpay errors. For Razorpay errors use the error block
+///
+/// lib_error_description: This is the description of the library error code. The description may change time to time
+///     so if checking for a particular error, use the lib_error_code as those are very unlikely to change.
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ErrorResponse {
-    pub error: ErrorObject,
+    /// Razorpay Error Object
+    pub error: RzpErrorObject,
+    /// library error code
+    pub lib_error_code: String,
+    /// library error description
+    pub lib_error_description: String,
+    pub lib_error: Option(String),
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct ErrorObject {
+pub struct RzpErrorObject {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub code: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
